@@ -1,29 +1,45 @@
-from jproperties import Properties
+from pathlib import Path
 from typing import Optional
 
-from LLMSelector import LLMType, get_llm_config
+class ConfigReader:
+    _project_root = Path(__file__).resolve().parent.parent
+    _config_file_path = _project_root / "configs" / "URI.properties"
+    _configs: dict[str, str] = {}
+    _loaded = False
 
-configs = Properties()
+    @classmethod
+    def load_configs(cls, config_file_path: str | None = None) -> dict[str, str]:
+        """Load all URI configs from the properties file."""
+        config_path = Path(config_file_path) if config_file_path else cls._config_file_path
+        cls._configs = {}
 
-try:
-    with open("../configs/URI.properties", "rb") as uri_prop:
-        configs.load(uri_prop)
+        if not config_path.exists():
+            raise FileNotFoundError(f"URI.properties file not found at {config_path}")
 
-except FileNotFoundError:
-    print("URI.properties file not found.")
-except Exception as e:
-    print(f"An error occurred while reading the properties file: {e}")
+        for raw_line in config_path.read_text(encoding="utf-8").splitlines():
+            line = raw_line.strip()
 
+            if not line or line.startswith("#") or "=" not in line:
+                continue
 
-def get_uri(llm: LLMType) -> Optional[str]:
-    """Gets the base URI for a given LLM type from the properties file."""
-    try:
-        key = get_llm_config(llm).uri_key
-    except ValueError:
-        return None
+            key, value = line.split("=", 1)
+            cls._configs[key.strip()] = value.strip()
 
-    if key in configs:
-        value, _ = configs[key]
-        return value
+        cls._loaded = True
+        return dict(cls._configs)
 
-    return None
+    @classmethod
+    def get_uri(cls, uri_key: str) -> Optional[str]:
+        """Get the URI value for the given config key."""
+        if not cls._loaded:
+            cls.load_configs()
+
+        return cls._configs.get(uri_key)
+
+    @classmethod
+    def get_all(cls) -> dict[str, str]:
+        """Return all loaded URI configs as key-value pairs."""
+        if not cls._loaded:
+            cls.load_configs()
+
+        return dict(cls._configs)
