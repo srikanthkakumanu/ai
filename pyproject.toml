@@ -5,5 +5,9 @@ description = "LLM Engineering"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-    "openai >=2.30.0"
+    "openai>=2.30.0",
+    "scraper>=0.1.0",
+    "requests>=2.33.1",
+    "bs4>=0.0.2",
+    "ipython>=9.12.0"
 ]

@@ -1,4 +1,5 @@
-from llm.LLMModel import LLMModel
-from llm.LLMType import LLMType
+from . import LLMClient
+from .LLMModel import LLMModel
+from .LLMType import LLMType
 
-__all__ = ["LLMModel", "LLMType"]
+__all__ = ["LLMClient", "LLMModel", "LLMType"]
